@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Active Learning Game</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div id="start-screen" class="screen">
+        <h1>English Active Learning</h1>
+        <p>เลือกโหมดเกมที่ต้องการ</p>
+        <div class="menu-buttons">
+            <button onclick="startGame('adventure')">Game 1: English Adventure</button>
+            <button onclick="startGame('vocabulary')">Game 2: Vocabulary Happy Learning</button>
+        </div>
+        <div class="instruction">
+            กติกา: ยืนหน้ากล้อง และ <b>เอียงตัวไปทางซ้าย หรือ ขวา</b> เพื่อเลือกคำตอบ
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen hidden">
+        <div class="game-container">
+            <video class="input_video" style="display: none;"></video>
+            <canvas class="output_canvas" width="800" height="600"></canvas>
+            
+            <div class="ui-layer">
+                <div class="score-board">คะแนน: <span id="score">0</span></div>
+                <div id="question-text" class="question-box">เตรียมตัว...</div>
+                
+                <div class="answers-box">
+                    <div id="ans-left" class="answer-card left-card">ซ้าย</div>
+                    <div id="ans-right" class="answer-card right-card">ขวา</div>
+                </div>
+            </div>
+            
+            <div id="feedback" class="feedback-overlay hidden">ถูกต้อง!</div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
