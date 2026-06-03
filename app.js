@@ -1,74 +1,91 @@
-let questions = [...scienceData];
-let currentIdx = 0;
-let score = 0;
-let active = false;
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Science AI Active Learning - โรงเรียนวิวัฒน์วิทยา</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <audio id="bg-music" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
+    <audio id="correct-sound"><source src="https://www.myinstants.com/media/sounds/correct.mp3" type="audio/mpeg"></audio>
+    <audio id="wrong-sound"><source src="https://www.myinstants.com/media/sounds/wrong.mp3" type="audio/mpeg"></audio>
 
-const video = document.querySelector('.input_video');
-const canvas = document.querySelector('.output_canvas');
-const ctx = canvas.getContext('2d');
+    <div id="start-screen" class="screen">
+        <div class="intro-box">
+            <img src="https://cdn-icons-png.flaticon.com/512/2859/2859706.png" class="logo" alt="Logo">
+            <h1>วิทยาศาสตร์ ป.3</h1>
+            <h2>เรื่อง สิ่งมีชีวิต และ สิ่งไม่มีชีวิต</h2>
+            <div class="author-info">
+                <p>จัดทำโดย</p>
+                <h3>นายกิตติ์ธเนศ นิธิกรอุดมวิทย์</h3>
+                <p>ผู้อำนวยการโรงเรียนวิวัฒน์วิทยา</p>
+            </div>
+            
+            <div class="mode-selection">
+                <p>เลือกรูปแบบการควบคุมเกม</p>
+                <button onclick="selectMode('camera')" class="btn-mode">🎥 โหมดใช้กล้อง (ใช้มือยก)</button>
+                <button onclick="selectMode('mouse')" class="btn-mode">🖱️ โหมดใช้เมาส์คลิก</button>
+            </div>
 
-const pose = new Pose({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`});
-pose.setOptions({ modelComplexity: 1, minDetectionConfidence: 0.5 });
-pose.onResults(onResults);
+            <div class="menu-footer">
+                <button onclick="showInstructions()" class="btn-sub">📖 วิธีการเล่น</button>
+            </div>
+        </div>
+    </div>
 
-const camera = new Camera(video, { onFrame: async () => await pose.send({image: video}), width: 800, height: 600 });
+    <div id="instruction-screen" class="screen hidden">
+        <div class="intro-box">
+            <h1>📖 วิธีการเล่นเกม</h1>
+            <div class="instruction-content">
+                <p><b>1. โหมดใช้กล้อง (🎥):</b> ยืนให้กล้องเห็นร่างกาย จากนั้นยื่นมือหรือยกมือขึ้นไปในโซนคำตอบฝั่ง ซ้าย หรือ ขวา เพื่อเลือกคำตอบนั้นๆ</p>
+                <p><b>2. โหมดใช้เมาส์ (🖱️):</b> นำเมาส์ไปคลิกที่กล่องคำตอบฝั่ง ซ้าย หรือ ขวา บนหน้าจอเพื่อเลือกข้อที่ถูกต้องได้ทันที</p>
+                <p>ระบบมีคำถามทั้งหมด 10 ข้อ มาลองสะสมคะแนนกันเลยครับ!</p>
+            </div>
+            <button onclick="showMainMenu()" class="btn-start">ย้อนกลับมาเมนูหลัก ↩️</button>
+        </div>
+    </div>
 
-function startGame() {
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('game-screen').classList.remove('hidden');
-    document.getElementById('bg-music').play();
-    camera.start();
-    loadNext();
-}
+    <div id="game-screen" class="screen hidden">
+        <div class="game-wrapper">
+            <video class="input_video" style="display: none;"></video>
+            <canvas class="output_canvas" width="800" height="600"></canvas>
+            
+            <div class="ui-layer">
+                <div class="header">
+                    <div class="score-card">คะแนน: <span id="score">0</span> / 10</div>
+                    <div class="title-tag">วิชาวิทยาศาสตร์ 🔬</div>
+                </div>
+                
+                <div id="question-text" class="question-bubble">กำลังเตรียมระบบ...</div>
+                
+                <div class="choice-container">
+                    <div id="ans-left" class="choice-card left" onclick="handleMouseClick('left')">ซ้าย</div>
+                    <div id="ans-right" class="choice-card right" onclick="handleMouseClick('right')">ขวา</div>
+                </div>
+                
+                <div id="control-hint" class="footer-hint">คำแนะนำในการเล่น</div>
+            </div>
+            
+            <div id="feedback" class="feedback-msg hidden">ถูกต้อง! 🎉</div>
+        </div>
+    </div>
 
-function loadNext() {
-    if(currentIdx >= questions.length) {
-        document.getElementById('question-text').innerText = "เก่งมาก! จบการเรียนรู้แล้วครับ ✨";
-        active = false;
-        return;
-    }
-    const q = questions[currentIdx];
-    document.getElementById('question-text').innerText = q.q;
-    document.getElementById('ans-left').innerText = q.left;
-    document.getElementById('ans-right').innerText = q.right;
-    setTimeout(() => { active = true; }, 1500);
-}
+    <div id="summary-screen" class="screen hidden">
+        <div class="intro-box">
+            <h1>🏆 สรุปผลคะแนนการเล่น</h1>
+            <h2 class="final-score">คุณได้คะแนนทั้งหมด <span id="final-score-text">0</span> เต็ม 10 คะแนน</h2>
+            <div class="summary-emoji" id="summary-emoji">🌟</div>
+            <div class="summary-buttons">
+                <button onclick="restartGame()" class="btn-start">🔄 เล่นอีกครั้ง</button>
+                <button onclick="showMainMenu()" class="btn-mode">🚪 ออกจากโปรแกรม (กลับหน้าหลัก)</button>
+            </div>
+        </div>
+    </div>
 
-function answer(side) {
-    if(!active) return;
-    active = false;
-    const q = questions[currentIdx];
-    const isCorrect = (side === q.ans);
-    
-    const fb = document.getElementById('feedback');
-    if(isCorrect) {
-        score++;
-        document.getElementById('score').innerText = score;
-        document.getElementById('correct-sound').play();
-        fb.innerText = "ถูกต้อง! 🎉"; fb.style.color = "#2ecc71";
-    } else {
-        fb.innerText = "ลองใหม่นะ 😅"; fb.style.color = "#e74c3c";
-    }
-    
-    fb.classList.remove('hidden');
-    currentIdx++;
-    setTimeout(() => { fb.classList.add('hidden'); loadNext(); }, 2000);
-}
-
-function onResults(res) {
-    ctx.save();
-    ctx.clearRect(0, 0, 800, 600);
-    ctx.translate(800, 0); ctx.scale(-1, 1); // MIRROR EFFECT
-    ctx.drawImage(res.image, 0, 0, 800, 600);
-
-    if (res.poseLandmarks && active) {
-        const nose = res.poseLandmarks[0];
-        if (nose.x < 0.35) answer('left');
-        else if (nose.x > 0.65) answer('right');
-
-        ctx.beginPath();
-        ctx.arc(nose.x * 800, nose.y * 600, 12, 0, 2*Math.PI);
-        ctx.fillStyle = "yellow"; ctx.fill();
-    }
-    ctx.restore();
-}
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
