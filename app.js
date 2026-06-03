@@ -46,6 +46,10 @@ function selectMode(mode) {
     const leftCard = document.getElementById('ans-left');
     const rightCard = document.getElementById('ans-right');
     
+    // ลบหน้าจอ exit เก่าออกถ้ามี
+    const oldExit = document.getElementById('exit-screen');
+    if (oldExit) oldExit.remove();
+    
     if (mode === 'camera') {
         const isReady = initCameraSystem();
         if (!isReady) return; 
@@ -88,6 +92,10 @@ function showMainMenu() {
     document.getElementById('instruction-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.add('hidden');
     document.getElementById('summary-screen').classList.add('hidden');
+    
+    const oldExit = document.getElementById('exit-screen');
+    if (oldExit) oldExit.remove();
+    
     document.getElementById('start-screen').classList.remove('hidden');
     document.getElementById('bg-music').pause();
     document.getElementById('bg-music').currentTime = 0;
@@ -173,24 +181,60 @@ function endGame() {
     }
 }
 
+function exitProgram() {
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.add('hidden');
+    document.getElementById('summary-screen').classList.add('hidden');
+    document.getElementById('instruction-screen').classList.add('hidden');
+    
+    const oldExit = document.getElementById('exit-screen');
+    if (oldExit) oldExit.remove();
+    
+    const exitScreen = document.createElement('div');
+    exitScreen.id = 'exit-screen';
+    exitScreen.className = 'screen';
+    exitScreen.innerHTML = `
+        <div class="intro-box" style="border-color: #ff7675; box-shadow: 0 15px 0 #ff7675;">
+            <h1>🚪 ปิดระบบการเรียนรู้เรียบร้อยแล้ว</h1>
+            <p style="font-size: 20px; margin: 20px 0; color: #555;">ขอบคุณเด็กๆ ทุกคนที่เข้ามาร่วมสนุกและเรียนรู้วิทยาศาตร์ ป.3 ในวันนี้ครับ</p>
+            <p style="font-weight: bold; color: #2c3e50;">โรงเรียนวิวัฒน์วิทยา</p>
+            <button onclick="location.reload()" class="btn-start" style="background-color: #2ecc71; box-shadow: 0 6px 0 #27ae60; margin-top: 15px;">🔄 กลับเข้าสู่หน้าหลักอีกครั้ง</button>
+        </div>
+    `;
+    document.body.appendChild(exitScreen);
+    
+    document.getElementById('bg-music').pause();
+    document.getElementById('bg-music').currentTime = 0;
+    if (cameraStarted && camera) {
+        camera.stop();
+        cameraStarted = false;
+    }
+}
+
 function onResults(res) {
     ctx.save();
     ctx.clearRect(0, 0, 800, 600);
     
     if (controlMode === 'camera') {
+        // เปิด Mirror Mode เพื่อให้เหมือนกระจกเงาจากมุมมองคนเล่น ไม่สลับฝั่งแล้วครับ
+        ctx.translate(800, 0); 
+        ctx.scale(-1, 1); 
         ctx.drawImage(res.image, 0, 0, 800, 600);
 
         if (res.poseLandmarks && active) {
             const leftWrist = res.poseLandmarks[15];
             const rightWrist = res.poseLandmarks[16];
             
-            if ((leftWrist.x < 0.35 && leftWrist.y < 0.6) || (rightWrist.x < 0.35 && rightWrist.y < 0.6)) {
+            // ตรวจสอบโซนซ้าย-ขวาบนจอภาพกระจกเงาอย่างสมบูรณ์
+            // พิกัด x ของ MediaPipe จากกล้องดิบจะตรงกันข้ามเมื่อทำ Mirror
+            if ((leftWrist.x > 0.65 && leftWrist.y < 0.6) || (rightWrist.x > 0.65 && rightWrist.y < 0.6)) {
                 checkAnswer('left');
             }
-            else if ((leftWrist.x > 0.65 && leftWrist.y < 0.6) || (rightWrist.x > 0.65 && rightWrist.y < 0.6)) {
+            else if ((leftWrist.x < 0.35 && leftWrist.y < 0.6) || (rightWrist.x < 0.35 && rightWrist.y < 0.6)) {
                 checkAnswer('right');
             }
 
+            // วาดจุดแสดงตำแหน่งมือทั้งสองข้าง
             if (leftWrist.y < 0.6) {
                 ctx.beginPath(); ctx.arc(leftWrist.x * 800, leftWrist.y * 600, 15, 0, 2 * Math.PI);
                 ctx.fillStyle = "#3498db"; ctx.fill(); ctx.strokeStyle = "white"; ctx.stroke();
