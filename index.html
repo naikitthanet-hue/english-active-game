@@ -2,42 +2,52 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Active Learning Game</title>
+    <title>Science AI Active Learning - โรงเรียนวิวัฒน์วิทยา</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 </head>
 <body>
+    <audio id="bg-music" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
+    <audio id="correct-sound"><source src="https://www.myinstants.com/media/sounds/correct.mp3" type="audio/mpeg"></audio>
 
     <div id="start-screen" class="screen">
-        <h1>English Active Learning</h1>
-        <p>เลือกโหมดเกมที่ต้องการ</p>
-        <div class="menu-buttons">
-            <button onclick="startGame('adventure')">Game 1: English Adventure</button>
-            <button onclick="startGame('vocabulary')">Game 2: Vocabulary Happy Learning</button>
-        </div>
-        <div class="instruction">
-            กติกา: ยืนหน้ากล้อง และ <b>เอียงตัวไปทางซ้าย หรือ ขวา</b> เพื่อเลือกคำตอบ
+        <div class="intro-box">
+            <img src="https://cdn-icons-png.flaticon.com/512/2859/2859706.png" class="logo">
+            <h1>วิทยาศาสตร์ ป.3</h1>
+            <h2>เรื่อง สิ่งมีชีวิต และ สิ่งไม่มีชีวิต</h2>
+            <div class="author-info">
+                <p>จัดทำโดย</p>
+                <h3>นายกิตติ์ธเนศ นิธิกรอุดมวิทย์</h3>
+                <p>ผู้อำนวยการโรงเรียนวิวัฒน์วิทยา</p>
+            </div>
+            <button onclick="startGame()" class="btn-start">เริ่มการเรียนรู้ 🚀</button>
         </div>
     </div>
 
     <div id="game-screen" class="screen hidden">
-        <div class="game-container">
+        <div class="game-wrapper">
             <video class="input_video" style="display: none;"></video>
             <canvas class="output_canvas" width="800" height="600"></canvas>
             
             <div class="ui-layer">
-                <div class="score-board">คะแนน: <span id="score">0</span></div>
-                <div id="question-text" class="question-box">เตรียมตัว...</div>
-                
-                <div class="answers-box">
-                    <div id="ans-left" class="answer-card left-card">ซ้าย</div>
-                    <div id="ans-right" class="answer-card right-card">ขวา</div>
+                <div class="header">
+                    <div class="score-card">คะแนน: <span id="score">0</span></div>
+                    <div class="title-tag">วิชาวิทยาศาสตร์ 🔬</div>
                 </div>
+                
+                <div id="question-text" class="question-bubble">กำลังเตรียมกล้อง...</div>
+                
+                <div class="choice-container">
+                    <div id="ans-left" class="choice-card left">ซ้าย</div>
+                    <div id="ans-right" class="choice-card right">ขวา</div>
+                </div>
+                
+                <div class="footer-hint">💡 เอียงจมูกไปทางคำตอบที่ถูกต้อง!</div>
             </div>
             
-            <div id="feedback" class="feedback-overlay hidden">ถูกต้อง!</div>
+            <div id="feedback" class="feedback-msg hidden">เก่งมาก! 🌟</div>
         </div>
     </div>
 
@@ -45,3 +55,193 @@
     <script src="app.js"></script>
 </body>
 </html>
+
+#### 2. ไฟล์ `style.css` (ดีไซน์ขอบจอ กราฟิก และความสดใส)
+```css
+:root {
+    --primary: #ffde59;
+    --secondary: #70d1ff;
+    --accent: #ff8b3d;
+    --bg: #fffcf0;
+}
+
+body {
+    margin: 0; padding: 0;
+    font-family: 'Kanit', sans-serif;
+    background-color: var(--bg);
+    overflow: hidden;
+}
+
+.hidden { display: none !important; }
+
+/* Intro Screen */
+.intro-box {
+    background: white;
+    padding: 50px;
+    border-radius: 40px;
+    box-shadow: 0 20px 0 #ffde59;
+    border: 5px solid #333;
+    max-width: 600px;
+    margin: 10vh auto;
+    text-align: center;
+}
+
+.logo { width: 120px; margin-bottom: 20px; }
+
+.btn-start {
+    background: var(--accent);
+    color: white;
+    font-size: 28px;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 30px;
+    box-shadow: 0 8px 0 #d35400;
+}
+
+/* Game Layout */
+.game-wrapper {
+    position: relative;
+    width: 850px;
+    height: 650px;
+    margin: 20px auto;
+    border: 15px solid;
+    border-image: linear-gradient(to right, #ffde59, #ff8b3d, #70d1ff) 1; /* ขอบจอสายรุ้ง */
+    border-radius: 30px;
+    overflow: hidden;
+}
+
+.output_canvas {
+    width: 100%; height: 100%;
+    transform: scaleX(-1); /* Mirror ภาพให้ตรงกับตัวคนเล่น */
+}
+
+.ui-layer {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; pointer-events: none;
+}
+
+.header { display: flex; justify-content: space-between; padding: 15px; }
+.score-card { background: white; padding: 10px 20px; border-radius: 15px; font-weight: bold; border: 3px solid #333; }
+.title-tag { color: white; text-shadow: 2px 2px #333; font-size: 20px; }
+
+.question-bubble {
+    background: white;
+    margin: 10px 50px;
+    padding: 20px;
+    border-radius: 25px;
+    font-size: 32px;
+    font-weight: bold;
+    text-align: center;
+    border: 4px solid var(--secondary);
+}
+
+.choice-container { display: flex; justify-content: space-between; margin-top: auto; padding: 40px; }
+.choice-card {
+    width: 40%; padding: 25px;
+    font-size: 36px; font-weight: bold;
+    text-align: center; border-radius: 25px;
+    color: white; border: 5px solid #333;
+}
+.left { background: #3498db; }
+.right { background: #e67e22; }
+
+.footer-hint { text-align: center; padding: 15px; background: rgba(255,255,255,0.8); }
+
+.feedback-msg {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 100px; color: #2ecc71; text-shadow: 3px 3px 0 white;
+}
+
+#### 3. ไฟล์ `data.js` (เนื้อหาวิทยาศาสตร์ ป.3)
+```javascript
+const scienceData = [
+    { q: "สัตว์ชนิดนี้คืออะไร? (แมว)", left: "สิ่งมีชีวิต 🐱", right: "สิ่งไม่มีชีวิต 🪨", ans: "left" },
+    { q: "พัดลม จัดเป็นอะไร?", left: "สิ่งมีชีวิต 🌿", right: "สิ่งไม่มีชีวิต 🌀", ans: "right" },
+    { q: "ต้นกุหลาบ จัดเป็นอะไร?", left: "สิ่งมีชีวิต 🌹", right: "สิ่งไม่มีชีวิต 🧱", ans: "left" },
+    { q: "ก้อนหิน จัดเป็นอะไร?", left: "สิ่งมีชีวิต 🐕", right: "สิ่งไม่มีชีวิต 💎", ans: "right" },
+    { q: "ตุ๊กตาหมี จัดเป็นอะไร?", left: "สิ่งมีชีวิต 🐼", right: "สิ่งไม่มีชีวิต 🧸", ans: "right" },
+    { q: "นักเรียน จัดเป็นอะไร?", left: "สิ่งมีชีวิต 👦", right: "สิ่งไม่มีชีวิต 🚗", ans: "left" },
+    { q: "รถยนต์ จัดเป็นอะไร?", left: "สิ่งมีชีวิต 🐴", right: "สิ่งไม่มีชีวิต 🚘", ans: "right" }
+];
+
+#### 4. ไฟล์ `app.js` (แก้ไขระบบ Mirror และการสุ่มเนื้อหา)
+```javascript
+let questions = [...scienceData];
+let currentIdx = 0;
+let score = 0;
+let active = false;
+
+const video = document.querySelector('.input_video');
+const canvas = document.querySelector('.output_canvas');
+const ctx = canvas.getContext('2d');
+
+const pose = new Pose({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`});
+pose.setOptions({ modelComplexity: 1, minDetectionConfidence: 0.5 });
+pose.onResults(onResults);
+
+const camera = new Camera(video, { onFrame: async () => await pose.send({image: video}), width: 800, height: 600 });
+
+function startGame() {
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    document.getElementById('bg-music').play();
+    camera.start();
+    loadNext();
+}
+
+function loadNext() {
+    if(currentIdx >= questions.length) {
+        document.getElementById('question-text').innerText = "เก่งมาก! จบการเรียนรู้แล้วครับ ✨";
+        active = false;
+        return;
+    }
+    const q = questions[currentIdx];
+    document.getElementById('question-text').innerText = q.q;
+    document.getElementById('ans-left').innerText = q.left;
+    document.getElementById('ans-right').innerText = q.right;
+    setTimeout(() => { active = true; }, 1500);
+}
+
+function answer(side) {
+    if(!active) return;
+    active = false;
+    const q = questions[currentIdx];
+    const isCorrect = (side === q.ans);
+    
+    const fb = document.getElementById('feedback');
+    if(isCorrect) {
+        score++;
+        document.getElementById('score').innerText = score;
+        document.getElementById('correct-sound').play();
+        fb.innerText = "ถูกต้อง! 🎉"; fb.style.color = "#2ecc71";
+    } else {
+        fb.innerText = "ลองใหม่นะ 😅"; fb.style.color = "#e74c3c";
+    }
+    
+    fb.classList.remove('hidden');
+    currentIdx++;
+    setTimeout(() => { fb.classList.add('hidden'); loadNext(); }, 2000);
+}
+
+function onResults(res) {
+    ctx.save();
+    ctx.clearRect(0, 0, 800, 600);
+    ctx.translate(800, 0); ctx.scale(-1, 1); // MIRROR EFFECT
+    ctx.drawImage(res.image, 0, 0, 800, 600);
+
+    if (res.poseLandmarks && active) {
+        const nose = res.poseLandmarks[0];
+        // เมื่อ Mirror แล้ว: x < 0.35 คือซ้ายของจอ (ขวาของเด็ก), x > 0.65 คือขวาของจอ (ซ้ายของเด็ก)
+        if (nose.x < 0.35) answer('left');
+        else if (nose.x > 0.65) answer('right');
+
+        ctx.beginPath();
+        ctx.arc(nose.x * 800, nose.y * 600, 12, 0, 2*Math.PI);
+        ctx.fillStyle = "yellow"; ctx.fill();
+    }
+    ctx.restore();
+}
+
+ผอ. แชน สามารถนำโค้ดที่ปรับปรุงใหม่นี้ไปแก้ใน GitHub ผ่านวิธีเดิม (Edit File) ได้เลยนะครับ รับรองว่าเด็กๆ จะสนุกกับวิชาวิทยาศาสตร์มากขึ้นแน่นอนครับ! ถ้าต้องการปรับแต่งส่วนไหนเพิ่มเติม แจ้งได้ทันทีเลยครับผม ยินดีช่วยเต็มที่ครับ!
