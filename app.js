@@ -1,142 +1,74 @@
-let currentMode = '';
-let currentQuestions = [];
-let currentQuestionIndex = 0;
+let questions = [...scienceData];
+let currentIdx = 0;
 let score = 0;
-let canAnswer = false;
+let active = false;
 
-const startScreen = document.getElementById('start-screen');
-const gameScreen = document.getElementById('game-screen');
-const questionText = document.getElementById('question-text');
-const ansLeftText = document.getElementById('ans-left');
-const ansRightText = document.getElementById('ans-right');
-const scoreDisplay = document.getElementById('score');
-const feedbackDisplay = document.getElementById('feedback');
+const video = document.querySelector('.input_video');
+const canvas = document.querySelector('.output_canvas');
+const ctx = canvas.getContext('2d');
 
-// ตั้งค่า MediaPipe
-const videoElement = document.querySelector('.input_video');
-const canvasElement = document.querySelector('.output_canvas');
-const canvasCtx = canvasElement.getContext('2d');
-
-const pose = new Pose({locateFile: (file) => {
-    return 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/' + file;
-}});
-
-pose.setOptions({
-    modelComplexity: 1,
-    smoothLandmarks: true,
-    minDetectionConfidence: 0.5,
-    minTrackingConfidence: 0.5
-});
-
+const pose = new Pose({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`});
+pose.setOptions({ modelComplexity: 1, minDetectionConfidence: 0.5 });
 pose.onResults(onResults);
 
-const camera = new Camera(videoElement, {
-    onFrame: async () => {
-        await pose.send({image: videoElement});
-    },
-    width: 800,
-    height: 600
-});
+const camera = new Camera(video, { onFrame: async () => await pose.send({image: video}), width: 800, height: 600 });
 
-function startGame(mode) {
-    currentMode = mode;
-    currentQuestions = [...gameData[mode]];
-    currentQuestionIndex = 0;
-    score = 0;
-    scoreDisplay.innerText = score;
-    
-    startScreen.classList.add('hidden');
-    gameScreen.classList.remove('hidden');
-    
+function startGame() {
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    document.getElementById('bg-music').play();
     camera.start();
-    loadQuestion();
+    loadNext();
 }
 
-function loadQuestion() {
-    if (currentQuestionIndex >= currentQuestions.length) {
-        endGame();
+function loadNext() {
+    if(currentIdx >= questions.length) {
+        document.getElementById('question-text').innerText = "เก่งมาก! จบการเรียนรู้แล้วครับ ✨";
+        active = false;
         return;
     }
-    
-    const qData = currentQuestions[currentQuestionIndex];
-    questionText.innerText = qData.q;
-    ansLeftText.innerText = qData.left;
-    ansRightText.innerText = qData.right;
-    
-    setTimeout(() => {
-        canAnswer = true;
-    }, 1500); // หน่วงเวลา 1.5 วินาทีเพื่อป้องกันการตอบซ้ำทันที
+    const q = questions[currentIdx];
+    document.getElementById('question-text').innerText = q.q;
+    document.getElementById('ans-left').innerText = q.left;
+    document.getElementById('ans-right').innerText = q.right;
+    setTimeout(() => { active = true; }, 1500);
 }
 
-function submitAnswer(selectedSide) {
-    if (!canAnswer) return;
-    canAnswer = false;
+function answer(side) {
+    if(!active) return;
+    active = false;
+    const q = questions[currentIdx];
+    const isCorrect = (side === q.ans);
     
-    const qData = currentQuestions[currentQuestionIndex];
-    const isCorrect = (selectedSide === qData.ans);
-    
-    if (isCorrect) {
-        score = score + 1;
-        scoreDisplay.innerText = score;
-        showFeedback("ถูกต้อง!", "#2ecc71");
+    const fb = document.getElementById('feedback');
+    if(isCorrect) {
+        score++;
+        document.getElementById('score').innerText = score;
+        document.getElementById('correct-sound').play();
+        fb.innerText = "ถูกต้อง! 🎉"; fb.style.color = "#2ecc71";
     } else {
-        showFeedback("ผิดจ้า!", "#e74c3c");
+        fb.innerText = "ลองใหม่นะ 😅"; fb.style.color = "#e74c3c";
     }
     
-    currentQuestionIndex = currentQuestionIndex + 1;
-    setTimeout(loadQuestion, 2000);
+    fb.classList.remove('hidden');
+    currentIdx++;
+    setTimeout(() => { fb.classList.add('hidden'); loadNext(); }, 2000);
 }
 
-function showFeedback(text, color) {
-    feedbackDisplay.innerText = text;
-    feedbackDisplay.style.color = color;
-    feedbackDisplay.classList.remove('hidden');
-    
-    setTimeout(() => {
-        feedbackDisplay.classList.add('hidden');
-    }, 1500);
-}
+function onResults(res) {
+    ctx.save();
+    ctx.clearRect(0, 0, 800, 600);
+    ctx.translate(800, 0); ctx.scale(-1, 1); // MIRROR EFFECT
+    ctx.drawImage(res.image, 0, 0, 800, 600);
 
-function endGame() {
-    canAnswer = false;
-    camera.stop();
-    questionText.innerText = "จบเกม! คุณได้ " + score + " คะแนน";
-    ansLeftText.innerText = "";
-    ansRightText.innerText = "";
-    
-    setTimeout(() => {
-        gameScreen.classList.add('hidden');
-        startScreen.classList.remove('hidden');
-    }, 4000);
-}
+    if (res.poseLandmarks && active) {
+        const nose = res.poseLandmarks[0];
+        if (nose.x < 0.35) answer('left');
+        else if (nose.x > 0.65) answer('right');
 
-// ระบบตรวจจับท่าทาง (จมูก)
-function onResults(results) {
-    canvasCtx.save();
-    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-    
-    canvasCtx.translate(canvasElement.width, 0);
-    canvasCtx.scale(-1, 1);
-    canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-
-    if (results.poseLandmarks && canAnswer) {
-        const nose = results.poseLandmarks[0];
-        
-        // เนื่องจากภาพถูกสลับซ้ายขวา (Mirror) เหมือนกระจก
-        // หากนักเรียนเอียงตัวไปทางซ้ายของตัวเอง ตำแหน่งแกน x จะมีค่ามากกว่า 0.65
-        // หากเอียงตัวไปทางขวา ตำแหน่งแกน x จะมีค่าน้อยกว่า 0.35
-        
-        if (nose.x > 0.65) {
-            submitAnswer('left');
-        } else if (nose.x < 0.35) {
-            submitAnswer('right');
-        }
-        
-        // วาดจุดที่จมูกเพื่อให้นักเรียนสังเกตตัวเองได้ง่ายขึ้น
-        canvasCtx.beginPath();
-        canvasCtx.arc(nose.x * canvasElement.width, nose.y * canvasElement.height, 15, 0, 2 * Math.PI);
-        canvasCtx.fillStyle = "yellow";
-        canvasCtx.fill();
+        ctx.beginPath();
+        ctx.arc(nose.x * 800, nose.y * 600, 12, 0, 2*Math.PI);
+        ctx.fillStyle = "yellow"; ctx.fill();
     }
-    canvasCtx.restore();
+    ctx.restore();
 }
