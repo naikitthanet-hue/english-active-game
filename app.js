@@ -4,39 +4,61 @@ let score = 0;
 let active = false;
 let controlMode = 'mouse';
 let cameraStarted = false;
+let pose = null;
+let camera = null;
 
 const video = document.querySelector('.input_video');
 const canvas = document.querySelector('.output_canvas');
 const ctx = canvas.getContext('2d');
 
-const pose = new Pose({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`});
-pose.setOptions({ modelComplexity: 1, minDetectionConfidence: 0.5 });
-pose.onResults(onResults);
-
-const camera = new Camera(video, { 
-    onFrame: async () => {
-        if (controlMode === 'camera') {
-            await pose.send({image: video});
+function initCameraSystem() {
+    if (pose && camera) return true;
+    
+    try {
+        if (typeof Pose === 'undefined' || typeof Camera === 'undefined') {
+            alert('ระบบกำลังโหลดส่วนประกอบ AI จากอินเทอร์เน็ต กรุณารอ 5-10 วินาทีแล้วลองกดอีกครั้ง หรือเลือกโหมดเมาส์เพื่อเล่นได้ทันทีครับ');
+            return false;
         }
-    }, 
-    width: 800, height: 600 
-});
+
+        pose = new Pose({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`});
+        pose.setOptions({ modelComplexity: 1, minDetectionConfidence: 0.5 });
+        pose.onResults(onResults);
+
+        camera = new Camera(video, { 
+            onFrame: async () => {
+                if (controlMode === 'camera' && pose) {
+                    await pose.send({image: video});
+                }
+            }, 
+            width: 800, height: 600 
+        });
+        return true;
+    } catch (error) {
+        console.error('Camera init error:', error);
+        return false;
+    }
+}
 
 function selectMode(mode) {
     controlMode = mode;
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('game-screen').classList.remove('hidden');
-    document.getElementById('bg-music').play();
     
     const hintText = document.getElementById('control-hint');
     const leftCard = document.getElementById('ans-left');
     const rightCard = document.getElementById('ans-right');
     
     if (mode === 'camera') {
+        const isReady = initCameraSystem();
+        if (!isReady) return; 
+
         hintText.innerText = "🎥 โหมดกล้อง: ยกมือขึ้นในฝั่งคำตอบที่ต้องการเลือก";
         leftCard.classList.remove('clickable');
         rightCard.classList.remove('clickable');
-        if (!cameraStarted) {
+        
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('bg-music').play();
+        
+        if (!cameraStarted && camera) {
             camera.start();
             cameraStarted = true;
         }
@@ -44,7 +66,12 @@ function selectMode(mode) {
         hintText.innerText = "🖱️ โหมดเมาส์: ใช้เมาส์คลิกกล่องคำตอบที่ถูกต้องได้เลย";
         leftCard.classList.add('clickable');
         rightCard.classList.add('clickable');
-        if (cameraStarted) {
+        
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('bg-music').play();
+        
+        if (cameraStarted && camera) {
             camera.stop();
             cameraStarted = false;
         }
@@ -64,7 +91,7 @@ function showMainMenu() {
     document.getElementById('start-screen').classList.remove('hidden');
     document.getElementById('bg-music').pause();
     document.getElementById('bg-music').currentTime = 0;
-    if (cameraStarted) {
+    if (cameraStarted && camera) {
         camera.stop();
         cameraStarted = false;
     }
@@ -151,30 +178,25 @@ function onResults(res) {
     ctx.clearRect(0, 0, 800, 600);
     
     if (controlMode === 'camera') {
-        // แสดงผลภาพปกติจากกล้อง ไม่ทำการฟลิบจอตามความต้องการข้อที่ 1
         ctx.drawImage(res.image, 0, 0, 800, 600);
 
         if (res.poseLandmarks && active) {
             const leftWrist = res.poseLandmarks[15];
             const rightWrist = res.poseLandmarks[16];
             
-            // ตรวจสอบตำแหน่งมือในระดับความสูงด้านบน (y < 0.6) ป้องกันการขยับมือค้างด้านล่าง
-            // โซนฝั่งซ้ายของจอ (X < 0.35)
             if ((leftWrist.x < 0.35 && leftWrist.y < 0.6) || (rightWrist.x < 0.35 && rightWrist.y < 0.6)) {
                 checkAnswer('left');
             }
-            // โซนฝั่งขวาของจอ (X > 0.65)
             else if ((leftWrist.x > 0.65 && leftWrist.y < 0.6) || (rightWrist.x > 0.65 && rightWrist.y < 0.6)) {
                 checkAnswer('right');
             }
 
-            // วาดจุดสีช่วยแสดงตำแหน่งพิกัดของมือทั้งสองข้างบนหน้าจอให้เห็นเด่นชัด
             if (leftWrist.y < 0.6) {
-                ctx.beginPath(); ctx.arc(leftWrist.x * 800, leftWrist.y * 600, 15, 0, 2*Math.PI);
+                ctx.beginPath(); ctx.arc(leftWrist.x * 800, leftWrist.y * 600, 15, 0, 2 * Math.PI);
                 ctx.fillStyle = "#3498db"; ctx.fill(); ctx.strokeStyle = "white"; ctx.stroke();
             }
             if (rightWrist.y < 0.6) {
-                ctx.beginPath(); ctx.arc(rightWrist.x * 800, rightWrist.y * 600, 15, 0, 2*Math.PI);
+                ctx.beginPath(); ctx.arc(rightWrist.x * 800, rightWrist.y * 600, 15, 0, 2 * Math.PI);
                 ctx.fillStyle = "#e67e22"; ctx.fill(); ctx.strokeStyle = "white"; ctx.stroke();
             }
         }
