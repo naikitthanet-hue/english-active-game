@@ -1,128 +1,95 @@
-html, body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Kanit', Arial, sans-serif;
-    background-color: #f0f8ff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+:root {
+    --primary: #ffde59;
+    --secondary: #70d1ff;
+    --accent: #ff8b3d;
+    --bg: #fffcf0;
 }
 
-.screen {
-    text-align: center;
-    width: 100%;
-}
-
-.hidden {
-    display: none !important;
-}
-
-h1 {
-    color: #2c3e50;
-    font-size: 48px;
-}
-
-.menu-buttons button {
-    font-size: 24px;
-    padding: 15px 30px;
-    margin: 10px;
-    border: none;
-    border-radius: 15px;
-    background-color: #f39c12;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.instruction {
-    margin-top: 30px;
-    font-size: 20px;
-    color: #555;
-}
-
-.game-container {
-    position: relative;
-    width: 800px;
-    height: 600px;
-    margin: 0 auto;
-    border: 8px solid #34495e;
-    border-radius: 20px;
+body {
+    margin: 0; padding: 0;
+    font-family: 'Kanit', sans-serif;
+    background-color: var(--bg);
     overflow: hidden;
-    background-color: #000;
+}
+
+.hidden { display: none !important; }
+
+/* Intro Screen */
+.intro-box {
+    background: white;
+    padding: 50px;
+    border-radius: 40px;
+    box-shadow: 0 20px 0 #ffde59;
+    border: 5px solid #333;
+    max-width: 600px;
+    margin: 10vh auto;
+    text-align: center;
+}
+
+.logo { width: 120px; margin-bottom: 20px; }
+
+.btn-start {
+    background: var(--accent);
+    color: white;
+    font-size: 28px;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 30px;
+    box-shadow: 0 8px 0 #d35400;
+}
+
+/* Game Layout */
+.game-wrapper {
+    position: relative;
+    width: 850px;
+    height: 650px;
+    margin: 20px auto;
+    border: 15px solid;
+    border-image: linear-gradient(to right, #ffde59, #ff8b3d, #70d1ff) 1;
+    border-radius: 30px;
+    overflow: hidden;
 }
 
 .output_canvas {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     transform: scaleX(-1);
 }
 
 .ui-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    pointer-events: none;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; pointer-events: none;
 }
 
-.score-board {
-    background: rgba(255, 255, 255, 0.9);
-    padding: 10px 20px;
-    font-size: 24px;
-    font-weight: bold;
-    border-bottom-right-radius: 15px;
-    display: inline-block;
-    align-self: flex-start;
-}
+.header { display: flex; justify-content: space-between; padding: 15px; }
+.score-card { background: white; padding: 10px 20px; border-radius: 15px; font-weight: bold; border: 3px solid #333; }
+.title-tag { color: white; text-shadow: 2px 2px #333; font-size: 20px; }
 
-.question-box {
-    background: rgba(255, 255, 255, 0.95);
+.question-bubble {
+    background: white;
+    margin: 10px 50px;
     padding: 20px;
-    margin: 10px 40px;
-    font-size: 36px;
+    border-radius: 25px;
+    font-size: 32px;
     font-weight: bold;
-    border-radius: 15px;
-    color: #2c3e50;
+    text-align: center;
+    border: 4px solid var(--secondary);
 }
 
-.answers-box {
-    display: flex;
-    justify-content: space-between;
-    padding: 30px;
-    margin-bottom: 20px;
+.choice-container { display: flex; justify-content: space-between; margin-top: auto; padding: 40px; }
+.choice-card {
+    width: 40%; padding: 25px;
+    font-size: 36px; font-weight: bold;
+    text-align: center; border-radius: 25px;
+    color: white; border: 5px solid #333;
 }
+.left { background: #3498db; }
+.right { background: #e67e22; }
 
-.answer-card {
-    padding: 20px 40px;
-    font-size: 40px;
-    font-weight: bold;
-    color: white;
-    border-radius: 15px;
-    width: 35%;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
+.footer-hint { text-align: center; padding: 15px; background: rgba(255,255,255,0.8); }
 
-.left-card {
-    background-color: #3498db;
-}
-
-.right-card {
-    background-color: #e74c3c;
-}
-
-.feedback-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 80px;
-    font-weight: bold;
-    color: #2ecc71;
-    text-shadow: 2px 2px 10px white;
-    pointer-events: none;
+.feedback-msg {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 100px; color: #2ecc71; text-shadow: 3px 3px 0 white;
 }
