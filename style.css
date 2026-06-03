@@ -132,8 +132,9 @@ h2 { color: #7f8c8d; font-size: 22px; margin: 5px 0; }
     display: flex; flex-direction: column; pointer-events: none;
 }
 
-.header { display: flex; justify-content: space-between; padding: 15px; pointer-events: auto; }
+.header { display: flex; justify-content: space-between; padding: 15px; pointer-events: auto; align-items: center; }
 .score-card { background: white; padding: 10px 20px; border-radius: 15px; font-weight: bold; border: 3px solid #333; font-size: 18px; }
+.timer-card { background: white; padding: 10px 20px; border-radius: 15px; font-weight: bold; border: 3px solid #333; font-size: 18px; color: #e74c3c; margin-left: 10px; margin-right: auto; }
 .title-tag { color: white; text-shadow: 2px 2px #333; font-size: 22px; font-weight: bold; }
 
 .question-bubble {
@@ -173,6 +174,6 @@ h2 { color: #7f8c8d; font-size: 22px; margin: 5px 0; }
     z-index: 10;
 }
 
-.final-score { color: #2c3e50; font-size: 26px; margin: 20px 0; }
+.final-score { color: #2c3e50; font-size: 26px; margin: 20px 0 5px 0; }
 .summary-emoji { font-size: 60px; margin-bottom: 20px; }
 .summary-buttons { display: flex; flex-direction: column; align-items: center; gap: 10px; }
