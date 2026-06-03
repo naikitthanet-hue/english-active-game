@@ -7,6 +7,10 @@ let cameraStarted = false;
 let pose = null;
 let camera = null;
 
+// ตัวแปรสำหรับนาฬิกาจับเวลา
+let timerInterval = null;
+let secondsElapsed = 0;
+
 const video = document.querySelector('.input_video');
 const canvas = document.querySelector('.output_canvas');
 const ctx = canvas.getContext('2d');
@@ -46,7 +50,6 @@ function selectMode(mode) {
     const leftCard = document.getElementById('ans-left');
     const rightCard = document.getElementById('ans-right');
     
-    // ลบหน้าจอ exit เก่าออกถ้ามี
     const oldExit = document.getElementById('exit-screen');
     if (oldExit) oldExit.remove();
     
@@ -89,6 +92,7 @@ function showInstructions() {
 }
 
 function showMainMenu() {
+    stopTimer();
     document.getElementById('instruction-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.add('hidden');
     document.getElementById('summary-screen').classList.add('hidden');
@@ -109,6 +113,7 @@ function initGame() {
     currentIdx = 0;
     score = 0;
     document.getElementById('score').innerText = score;
+    startTimer();
     loadNext();
 }
 
@@ -165,11 +170,39 @@ function checkAnswer(side) {
     }, 2000);
 }
 
+// ฟังก์ชันเปิดการทำงานนาฬิกาจับเวลา
+function startTimer() {
+    secondsElapsed = 0;
+    document.getElementById('timer').innerText = "00:00";
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        secondsElapsed++;
+        document.getElementById('timer').innerText = formatTime(secondsElapsed);
+    }, 1000);
+}
+
+// ฟังก์ชันหยุดนาฬิกาจับเวลา
+function stopTimer() {
+    clearInterval(timerInterval);
+}
+
+// ฟังก์ชันแปลงเลขวินาทีให้อยู่ในรูปแบบ หน้าจอตัวเลข MM:SS
+function formatTime(totalSeconds) {
+    let mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    let secs = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${mins}:${secs}`;
+}
+
 function endGame() {
     active = false;
+    stopTimer();
+    
     document.getElementById('game-screen').classList.add('hidden');
     document.getElementById('summary-screen').classList.remove('hidden');
     document.getElementById('final-score-text').innerText = score;
+    
+    // ดึงค่าเวลาที่บันทึกไว้ไปแสดงผลตอนสรุปคู่กับผลคะแนน
+    document.getElementById('final-time-text').innerText = formatTime(secondsElapsed);
     
     const emojiDiv = document.getElementById('summary-emoji');
     if (score >= 8) {
@@ -182,6 +215,7 @@ function endGame() {
 }
 
 function exitProgram() {
+    stopTimer();
     document.getElementById('start-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.add('hidden');
     document.getElementById('summary-screen').classList.add('hidden');
@@ -216,7 +250,6 @@ function onResults(res) {
     ctx.clearRect(0, 0, 800, 600);
     
     if (controlMode === 'camera') {
-        // เปิด Mirror Mode เพื่อให้เหมือนกระจกเงาจากมุมมองคนเล่น ไม่สลับฝั่งแล้วครับ
         ctx.translate(800, 0); 
         ctx.scale(-1, 1); 
         ctx.drawImage(res.image, 0, 0, 800, 600);
@@ -225,8 +258,6 @@ function onResults(res) {
             const leftWrist = res.poseLandmarks[15];
             const rightWrist = res.poseLandmarks[16];
             
-            // ตรวจสอบโซนซ้าย-ขวาบนจอภาพกระจกเงาอย่างสมบูรณ์
-            // พิกัด x ของ MediaPipe จากกล้องดิบจะตรงกันข้ามเมื่อทำ Mirror
             if ((leftWrist.x > 0.65 && leftWrist.y < 0.6) || (rightWrist.x > 0.65 && rightWrist.y < 0.6)) {
                 checkAnswer('left');
             }
@@ -234,7 +265,6 @@ function onResults(res) {
                 checkAnswer('right');
             }
 
-            // วาดจุดแสดงตำแหน่งมือทั้งสองข้าง
             if (leftWrist.y < 0.6) {
                 ctx.beginPath(); ctx.arc(leftWrist.x * 800, leftWrist.y * 600, 15, 0, 2 * Math.PI);
                 ctx.fillStyle = "#3498db"; ctx.fill(); ctx.strokeStyle = "white"; ctx.stroke();
