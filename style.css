@@ -133,8 +133,8 @@ h2 { color: #7f8c8d; font-size: 22px; margin: 5px 0; }
 }
 
 .header { display: flex; justify-content: space-between; padding: 15px; pointer-events: auto; align-items: center; }
-.score-card { background: white; padding: 10px 20px; border-radius: 15px; font-weight: bold; border: 3px solid #333; font-size: 18px; }
-.timer-card { background: white; padding: 10px 20px; border-radius: 15px; font-weight: bold; border: 3px solid #333; font-size: 18px; color: #e74c3c; margin-left: 10px; margin-right: auto; }
+.score-card { background: white; padding: 10px 20px; border-radius: 15px; font-weight: bold; border: 3px solid #333; font-size: 26px; }
+.timer-card { background: white; padding: 10px 20px; border-radius: 15px; font-weight: bold; border: 3px solid #333; font-size: 26px; color: #e74c3c; margin-left: 10px; margin-right: auto; }
 .title-tag { color: white; text-shadow: 2px 2px #333; font-size: 22px; font-weight: bold; }
 
 .question-bubble {
@@ -142,7 +142,7 @@ h2 { color: #7f8c8d; font-size: 22px; margin: 5px 0; }
     margin: 10px 50px;
     padding: 20px;
     border-radius: 25px;
-    font-size: 26px;
+    font-size: 38px;
     font-weight: bold;
     text-align: center;
     border: 4px solid var(--secondary);
