@@ -57,6 +57,7 @@
             <div class="ui-layer">
                 <div class="header">
                     <div class="score-card">คะแนน: <span id="score">0</span> / 10</div>
+                    <div class="timer-card">⏱️ เวลา: <span id="timer">00:00</span></div>
                     <div class="title-tag">วิชาวิทยาศาสตร์ 🔬</div>
                 </div>
                 
@@ -78,8 +79,9 @@
         <div class="intro-box">
             <h1>🏆 สรุปผลคะแนนการเล่น</h1>
             <h2 class="final-score">คุณได้คะแนนทั้งหมด <span id="final-score-text">0</span> เต็ม 10 คะแนน</h2>
+            <h2 class="final-time" style="color: #e67e22; margin-bottom: 20px;">⏱️ เวลาที่ใช้ไปทั้งหมด: <span id="final-time-text">00:00</span> นาที</h2>
             <div class="summary-emoji" id="summary-emoji">🌟</div>
-            <div class="summary-buttons">
+            <div class="summary-buttons" style="margin-top: 20px;">
                 <button onclick="restartGame()" class="btn-start">🔄 เล่นอีกครั้ง</button>
                 <button onclick="showMainMenu()" class="btn-mode">🚪 ออกจากโปรแกรม (กลับหน้าหลัก)</button>
             </div>
