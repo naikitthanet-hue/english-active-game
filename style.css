@@ -21,7 +21,6 @@ body {
 
 .hidden { display: none !important; }
 
-/* กล่องหน้าเมนูและหน้าต่างต่าง ๆ */
 .intro-box {
     background: white;
     padding: 40px;
@@ -58,7 +57,6 @@ h2 { color: #7f8c8d; font-size: 22px; margin: 5px 0; }
 }
 .mode-selection p { font-weight: bold; margin-top: 0; font-size: 18px; color: #333; }
 
-/* ปุ่มรูปแบบต่าง ๆ */
 .btn-mode {
     background: #2cedb7;
     color: #2c3e50;
@@ -114,7 +112,6 @@ h2 { color: #7f8c8d; font-size: 22px; margin: 5px 0; }
     line-height: 1.6;
 }
 
-/* พื้นที่แสดงผลเกม */
 .game-wrapper {
     position: relative;
     width: 850px;
@@ -169,7 +166,6 @@ h2 { color: #7f8c8d; font-size: 22px; margin: 5px 0; }
 
 .footer-hint { text-align: center; padding: 12px; background: rgba(255,255,255,0.9); font-weight: bold; color: #333; font-size: 16px; }
 
-/* กล่องแจ้งเตือนผลลัพธ์ ถูก/ผิด */
 .feedback-msg {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     font-size: 65px; font-weight: bold; padding: 20px 40px; border-radius: 20px; text-align: center;
